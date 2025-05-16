@@ -58,14 +58,3 @@ With its highly modular and pluggable design, this codebase can adapt to a varie
 - Submit to cloud platforms using job templates in `cloud_jobs/`
 
 ---
-
-## License
-
-MIT
-
----
-
-## 👤 Author
-
-[Your Name / Org]
-
