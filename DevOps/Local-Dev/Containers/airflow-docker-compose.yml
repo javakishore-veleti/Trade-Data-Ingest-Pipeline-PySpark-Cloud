@@ -1,0 +1,52 @@
+version: '3.8'
+
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:2.8.1
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+  depends_on:
+    - postgres-airflow
+  networks:
+    - trade_net
+
+services:
+  postgres-airflow:
+    image: postgres:15
+    container_name: airflow_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5433:5432"
+    volumes:
+      - airflow_pg_data:/var/lib/postgresql/data
+    networks:
+      - trade_net
+
+  webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    command: scheduler
+
+volumes:
+  airflow_pg_data:
+
+networks:
+  trade_net:

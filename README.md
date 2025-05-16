@@ -9,19 +9,40 @@ A modular, enterprise-grade data ingestion pipeline that ingests historical trad
 
 ## Architectural Overview
 
-**Flexibility**: Built to support multiple execution contexts such as CLI, Airflow, notebooks, and REST APIs with minimal code changes.
+This pipeline is structured to support a wide range of environments, development styles, and orchestration layers, making it adaptable for both exploratory and production-scale workloads.
 
-**Portability**: Designed to run seamlessly across local setups, on-premise clusters, and major cloud platforms including AWS, Azure, GCP, and Databricks.
+**Flexibility**: Built to support multiple execution contexts including CLI tools, Apache Airflow DAGs, interactive notebooks, and REST APIs with minimal changes to the core logic.
 
-- **Core Logic Isolation**: The core PySpark code is encapsulated in a reusable module so it can be triggered by different execution engines: CLI, Apache Airflow, Jupyter Notebooks, or native cloud Spark jobs.
-- **Modular Runtimes**:
-  - CLI Tool for local development
-  - Apache Airflow DAG for production orchestration
-  - Notebook compatibility for interactive debugging in Jupyter or Databricks
-  - Cloud Integration with job specs/scripts for EMR, Synapse, Dataproc, and Databricks
-- **API Layer**: A Flask backend serves REST APIs for monitoring and integration.
-- **Frontend Layer**: An Angular app visualizes ingestion metrics such as record counts, last load status, and timestamps.
-- **DevOps Ready**: Docker Compose configurations for PostgreSQL and Airflow are included for local simulation of cloud services.
+**Portability**: Designed for seamless operation across local setups, on-premise clusters, and major cloud platforms such as AWS, Azure, GCP, and Databricks.
+
+### Design Highlights
+
+- **Core Logic Isolation**  
+  The PySpark ingestion logic is encapsulated in reusable modules, allowing you to plug it into:
+  - CLI scripts for local testing
+  - Airflow DAGs for production
+  - Notebooks for experimentation
+  - Cloud job definitions for Spark-native environments
+
+- **Modular Runtime Support**
+  - **CLI Tool**: Easily trigger ingestion locally via `npm run ingest:data`
+  - **Airflow DAG**: Integrate the same logic for production pipelines
+  - **Jupyter / Databricks**: Run the pipeline inside interactive notebooks
+  - **Cloud Spark Engines**: Submit as jobs to EMR, Synapse, Dataproc, or Databricks clusters
+
+- **API Layer (Flask)**  
+  A Flask-based backend provides REST endpoints to expose ingestion metrics, pipeline status, and historical logs (planned extension).
+
+- **Frontend Layer (Angular)**  
+  An Angular frontend (optional) will be added to visualize ingestion progress, per-file metrics, and errors in real-time.
+
+- **DevOps-Ready Setup**  
+  Includes Docker Compose configurations for:
+  - PostgreSQL database (for trade and batch tables)
+  - Apache Airflow (for future orchestration flows)
+  - Volume mounts and local dataset emulation
+
+This architecture ensures consistent behavior regardless of the environment you're running in—local or cloud, batch or interactive, manual or automated.
 
 ---
 

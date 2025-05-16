@@ -1,0 +1,25 @@
+# Apache Airflow is excluded due to Python 3.11+ incompatibility.
+# Use the Docker Compose setup in DevOps/Local-Dev/Containers for Airflow.
+
+# Core Data Processing
+pyspark==3.4.1
+
+# Flask Backend
+flask==2.3.2
+flask-cors==4.0.0
+
+# PostgreSQL DB access
+sqlalchemy==2.0.29
+psycopg2-binary==2.9.9
+
+# Environment Config
+python-dotenv==1.0.1
+
+# CLI Support
+click==8.1.7
+
+# HTTP Client
+requests==2.31.0
+
+# Synthetic data generation
+faker==24.8.0

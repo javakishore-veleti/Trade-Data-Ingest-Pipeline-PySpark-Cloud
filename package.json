@@ -1,0 +1,32 @@
+{
+  "name": "trade-data-ingest-pipeline",
+  "version": "1.0.0",
+  "description": "Unified pipeline to ingest trade data using PySpark across cloud platforms with Flask + Angular monitoring.",
+  "scripts": {
+    "cli": "python3 cli_tool/run.py --env .env --mode local",
+    "backend": "python3 backend/app.py",
+    "frontend": "cd frontend/trade-monitor-ui && npm start",
+    "install:frontend": "cd frontend/trade-monitor-ui && npm install",
+    "docker:postgres:destroy": "docker-compose -f DevOps/Local-Dev/Containers/postgres-docker-compose.yml down -v",
+    "docker:postgres": "docker-compose -f DevOps/Local-Dev/Containers/postgres-docker-compose.yml up -d",
+    "docker:airflow": "docker-compose -f DevOps/Local-Dev/Containers/airflow-docker-compose.yml up -d",
+    "docker:down": "docker-compose -f DevOps/Local-Dev/Containers/postgres-docker-compose.yml down && docker-compose -f DevOps/Local-Dev/Containers/airflow-docker-compose.yml down",
+    "generate:synthetic-data": "python DevOps/Local-Dev/Dataset/generate_synthetic_trade_data.py",
+    "clean:synthetic": "rm -rf /tmp/$(whoami)/trade-data-ingest-pipeline-pyspark-cloud/Trade-Events/Local-Dev/Synthetic-Dataset/*",
+    "clean:synthetic:backup": "rm -rf /tmp/$(whoami)/trade-data-ingest-pipeline-pyspark-cloud/Trade-Events/Local-Dev/Synthetic-Dataset-Backup/*",
+    "ingest:data": "./prepare_ingestion.sh"
+  },
+  "keywords": [
+    "pyspark",
+    "postgresql",
+    "data-pipeline",
+    "airflow",
+    "flask",
+    "angular",
+    "docker",
+    "cloud",
+    "etl"
+  ],
+  "author": "Kishore Veleti",
+  "license": "MIT"
+}
