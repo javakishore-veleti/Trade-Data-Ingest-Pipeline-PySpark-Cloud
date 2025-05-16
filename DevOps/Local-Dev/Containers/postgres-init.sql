@@ -31,6 +31,5 @@ CREATE TABLE TRADE_EVENT (
     batch_id VARCHAR(50),
     batch_concurrent_number INTEGER,
     ingest_date TIMESTAMP,
-    concurrent_number INTEGER,
-    PRIMARY KEY (TradeId, CustomerId)
+    concurrent_number INTEGER
 );
