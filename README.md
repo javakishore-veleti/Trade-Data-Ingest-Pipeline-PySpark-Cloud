@@ -1,13 +1,13 @@
 # Trade Data Ingest Pipeline (PySpark + Cloud)
 
-This project implements a scalable and cloud-portable data ingestion pipeline using PySpark to load trade event CSVs into PostgreSQL. It supports synthetic data generation, batch metadata tracking, backup organization, and can run across local and cloud environments with minimal reconfiguration.
+This project implements a scalable and cloud-portable data ingestion pipeline using PySpark to load trade event CSVs into Postgres SQL. It supports synthetic data generation, batch metadata tracking, backup organization, and can run across local and cloud environments with minimal reconfiguration.
 
 ---
 
 ## What It Does
 
 - Reads synthetic trade event data from CSV files
-- Ingests enriched rows into PostgreSQL
+- Ingests enriched rows into Postgres SQL
 - Tracks metadata in a batch table for every ingested file
 - Moves processed files into timestamped backup directories
 - Can run in local Spark or be submitted to cloud platforms
@@ -19,7 +19,7 @@ This project implements a scalable and cloud-portable data ingestion pipeline us
 
 - Generates 2 million rows of synthetic trade events (across 200 CSV files)
 - Each `(TradeId, CustomerId)` pair is globally unique to prevent duplicate keys
-- Data is typecast to align with the PostgreSQL schema
+- Data is typecast to align with the Postgres SQL schema
 - Batch ingestion metadata includes file name, row count, status, timestamps, and a random concurrent number
 - All processed files are archived for traceability
 
@@ -29,7 +29,7 @@ This project implements a scalable and cloud-portable data ingestion pipeline us
 
 - `spark_pipeline/`: Core PySpark logic and ingestion routines
 - `cli_tool/generate_synthetic_trade_data.py`: Safe generator with composite key uniqueness
-- `DevOps/Local-Dev/Containers/`: Docker Compose setup for PostgreSQL and optional Airflow
+- `DevOps/Local-Dev/Containers/`: Docker Compose setup for Postgres SQL and optional Airflow
 - `DevOps/Local-Dev/Dataset/`: Dataset examples and volume paths
 - `.env`: Spark, cloud, and database environment configuration
 
@@ -86,7 +86,7 @@ This will:
 - Drop duplicate `(TradeId, CustomerId)` pairs before insert
 - Write enriched records to the event table
 - Log file-level metadata into a batch table
-- Move completed files to backup folders organized by timestamp and batch ID
+- Move completed files to back up folders organized by timestamp and batch ID
 
 ---
 
@@ -122,7 +122,7 @@ This pipeline is built to support a wide range of development and deployment sty
   - Job submission scripts for EMR, Synapse, Dataproc, and Databricks
 - **API Layer**: Flask backend provides endpoints to monitor ingestion state (planned)
 - **Frontend Layer**: Angular dashboard for displaying job stats and metrics (planned)
-- **DevOps Ready**: Docker Compose configurations for PostgreSQL and Airflow included
+- **DevOps Ready**: Docker Compose configurations for Postgres SQL and Airflow included
 
 ---
 
