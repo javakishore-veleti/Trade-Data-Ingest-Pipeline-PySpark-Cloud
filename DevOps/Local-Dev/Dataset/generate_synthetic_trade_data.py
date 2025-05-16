@@ -1,32 +1,30 @@
-import os
-import csv
-import uuid
-import random
+import os, csv, uuid, random
 from faker import Faker
 from getpass import getuser
 
 fake = Faker()
-total_rows = 2_000_000
 rows_per_file = 10_000
+total_rows = 2_000_000
 total_files = total_rows // rows_per_file
 
 user = getuser()
 repo = "trade-data-ingest-pipeline-pyspark-cloud"
 output_dir = os.getenv("LOCAL_CSV_PATH", f"/tmp/{user}/{repo}/Trade-Events/Local-Dev/Synthetic-Dataset")
-
 os.makedirs(output_dir, exist_ok=True)
 
-existing_keys = set()
+used_keys = set()
 
-
-def generate_row():
+def generate_unique_pair():
     while True:
         trade_id = str(uuid.uuid4())
-        customer_id = str(uuid.uuid4())[:8]
-        if (trade_id, customer_id) not in existing_keys:
-            existing_keys.add((trade_id, customer_id))
-            break
+        customer_id = str(uuid.uuid4())  # full UUID for lower collision probability
+        key = (trade_id, customer_id)
+        if key not in used_keys:
+            used_keys.add(key)
+            return trade_id, customer_id
 
+def generate_row():
+    trade_id, customer_id = generate_unique_pair()
     return {
         "TradeId": trade_id,
         "CustomerId": customer_id,
@@ -46,16 +44,15 @@ def generate_row():
         "To_Debited_Account": fake.iban()
     }
 
-
-header = list(generate_row().keys())
+columns = list(generate_row().keys())
 
 for i in range(total_files):
     file_path = os.path.join(output_dir, f"trades_part_{i + 1}.csv")
     with open(file_path, mode="w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=header)
+        writer = csv.DictWriter(f, fieldnames=columns)
         writer.writeheader()
         for _ in range(rows_per_file):
             writer.writerow(generate_row())
-    print(f"✅ Done Creating CSV File Trade Event Data file_path {file_path}")
+    print(f"✅ DONE Generating {file_path} ")
 
-print(f"✅ Generated {total_files} files at {output_dir}")
+print(f"✅ Generated {total_files} files with 2M unique rows at {output_dir}")
