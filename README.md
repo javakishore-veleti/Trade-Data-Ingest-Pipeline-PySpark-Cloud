@@ -1,81 +1,138 @@
 # Trade Data Ingest Pipeline (PySpark + Cloud)
-A cloud-agnostic data ingestion pipeline built using Apache PySpark. It is designed to ingest historical trade event data from distributed CSV files stored in various cloud object storage platforms (e.g., Azure Blob Storage, AWS S3, Google Cloud Storage) and persist them into a structured PostgreSQL database for downstream analytics and reporting
 
-# Introduction
+This project implements a scalable and cloud-portable data ingestion pipeline using PySpark to load trade event CSVs into PostgreSQL. It supports synthetic data generation, batch metadata tracking, backup organization, and can run across local and cloud environments with minimal reconfiguration.
 
-A modular, enterprise-grade data ingestion pipeline that ingests historical trade event data from CSV files and stores it into a PostgreSQL database. The system supports PySpark ingestion from local or cloud sources (Azure Blob, AWS S3, GCP GCS, Databricks), provides a Flask backend API, Angular frontend for monitoring, and can run as a CLI, Apache Airflow DAG, or on cloud-native Spark platforms.
+---
+
+## What It Does
+
+- Reads synthetic trade event data from CSV files
+- Ingests enriched rows into PostgreSQL
+- Tracks metadata in a batch table for every ingested file
+- Moves processed files into timestamped backup directories
+- Can run in local Spark or be submitted to cloud platforms
+- Designed to support CLI, Airflow, notebooks, or REST API execution
+
+---
+
+## Features
+
+- Generates 2 million rows of synthetic trade events (across 200 CSV files)
+- Each `(TradeId, CustomerId)` pair is globally unique to prevent duplicate keys
+- Data is typecast to align with the PostgreSQL schema
+- Batch ingestion metadata includes file name, row count, status, timestamps, and a random concurrent number
+- All processed files are archived for traceability
+
+---
+
+## Code Structure
+
+- `spark_pipeline/`: Core PySpark logic and ingestion routines
+- `cli_tool/generate_synthetic_trade_data.py`: Safe generator with composite key uniqueness
+- `DevOps/Local-Dev/Containers/`: Docker Compose setup for PostgreSQL and optional Airflow
+- `DevOps/Local-Dev/Dataset/`: Dataset examples and volume paths
+- `.env`: Spark, cloud, and database environment configuration
+
+---
+
+## Environment Setup
+
+```bash
+cp .env.example .env
+pip install -r requirements.txt
+```
+
+Make sure you have:
+- Python 3.11
+- Java 11 (run: `export JAVA_HOME=$(/usr/libexec/java_home -v 11)`)
+- Spark installed and `spark-submit` available in PATH
+
+---
+
+## Synthetic Data Generation
+
+This script ensures unique `(TradeId, CustomerId)` across all files:
+
+```bash
+python cli_tool/generate_synthetic_trade_data.py
+```
+
+This generates 200 CSV files (10,000 rows each) into:
+
+```
+/tmp/<user>/trade-data-ingest-pipeline-pyspark-cloud/Trade-Events/Local-Dev/Synthetic-Dataset/
+```
+
+To clean previous runs:
+
+```bash
+npm run clean:synthetic
+npm run clean:synthetic:backup
+```
+
+---
+
+## Ingesting Data
+
+To run the ingestion pipeline locally:
+
+```bash
+npm run ingest:data
+```
+
+This will:
+
+- Read all `.csv` files in the synthetic dataset folder
+- Drop duplicate `(TradeId, CustomerId)` pairs before insert
+- Write enriched records to the event table
+- Log file-level metadata into a batch table
+- Move completed files to backup folders organized by timestamp and batch ID
+
+---
+
+## Utility Scripts
+
+Available under `package.json`:
+
+```json
+"scripts": {
+  "ingest:data": "./prepare_ingestion.sh",
+  "clean:synthetic": "rm -rf /tmp/$(whoami)/trade-data-ingest-pipeline-pyspark-cloud/Trade-Events/Local-Dev/Synthetic-Dataset/*",
+  "clean:synthetic:backup": "rm -rf /tmp/$(whoami)/trade-data-ingest-pipeline-pyspark-cloud/Trade-Events/Local-Dev/Synthetic-Dataset-Backup/*"
+}
+```
 
 ---
 
 ## Architectural Overview
 
-This pipeline is structured to support a wide range of environments, development styles, and orchestration layers, making it adaptable for both exploratory and production-scale workloads.
+This pipeline is built to support a wide range of development and deployment styles, with minimal changes across environments.
 
-**Flexibility**: Built to support multiple execution contexts including CLI tools, Apache Airflow DAGs, interactive notebooks, and REST APIs with minimal changes to the core logic.
+**Flexibility**: Built to support multiple execution contexts including CLI tools, Apache Airflow DAGs, notebooks, and REST APIs.
 
-**Portability**: Designed for seamless operation across local setups, on-premise clusters, and major cloud platforms such as AWS, Azure, GCP, and Databricks.
+**Portability**: Designed to work seamlessly across local setups, on-premise Spark clusters, and cloud platforms like AWS, Azure, GCP, and Databricks.
 
 ### Design Highlights
 
-- **Core Logic Isolation**  
-  The PySpark ingestion logic is encapsulated in reusable modules, allowing you to plug it into:
-  - CLI scripts for local testing
-  - Airflow DAGs for production
-  - Notebooks for experimentation
-  - Cloud job definitions for Spark-native environments
-
-- **Modular Runtime Support**
-  - **CLI Tool**: Easily trigger ingestion locally via `npm run ingest:data`
-  - **Airflow DAG**: Integrate the same logic for production pipelines
-  - **Jupyter / Databricks**: Run the pipeline inside interactive notebooks
-  - **Cloud Spark Engines**: Submit as jobs to EMR, Synapse, Dataproc, or Databricks clusters
-
-- **API Layer (Flask)**  
-  A Flask-based backend provides REST endpoints to expose ingestion metrics, pipeline status, and historical logs (planned extension).
-
-- **Frontend Layer (Angular)**  
-  An Angular frontend (optional) will be added to visualize ingestion progress, per-file metrics, and errors in real-time.
-
-- **DevOps-Ready Setup**  
-  Includes Docker Compose configurations for:
-  - PostgreSQL database (for trade and batch tables)
-  - Apache Airflow (for future orchestration flows)
-  - Volume mounts and local dataset emulation
-
-This architecture ensures consistent behavior regardless of the environment you're running in—local or cloud, batch or interactive, manual or automated.
+- **Core Logic Isolation**: PySpark logic is modular and reusable across multiple execution environments
+- **Modular Runtimes**:
+  - CLI tool for local testing and automation
+  - Airflow DAG integration for production pipelines
+  - Notebook compatibility for interactive workflows
+  - Job submission scripts for EMR, Synapse, Dataproc, and Databricks
+- **API Layer**: Flask backend provides endpoints to monitor ingestion state (planned)
+- **Frontend Layer**: Angular dashboard for displaying job stats and metrics (planned)
+- **DevOps Ready**: Docker Compose configurations for PostgreSQL and Airflow included
 
 ---
 
-## Value Proposition
+## Next Steps
 
-This repository is ideal for teams looking to:
-
-- Backfill or batch-ingest large-scale financial trade data.
-- Standardize ingestion pipelines across multiple cloud platforms.
-- Monitor and audit ingestion through a web dashboard.
-- Experiment interactively with trade data via notebooks.
-- Integrate ingestion into a broader enterprise data lake or warehouse architecture.
-
-With its highly modular and pluggable design, this codebase can adapt to a variety of data platform setups and is ready for enterprise-scale deployment.
+- Implement Airflow DAG wrapping the PySpark logic
+- Expose job and ingestion metrics via Flask API
+- Visualize ingestion progress and metrics with Angular
+- Add schema validation layer before ingestion
 
 ---
 
-## Tech Stack
-
-- **PySpark** for high-performance distributed data processing
-- **PostgreSQL** as the landing zone for structured trade events
-- **Flask** for backend API services
-- **Angular** for the frontend dashboard
-- **Apache Airflow** for orchestration
-- **Docker Compose** for local infrastructure emulation
-
----
-
-## Development Modes
-
-- Run locally via CLI: `python cli_tool/run.py`
-- Run interactively in a Jupyter or Databricks notebook
-- Schedule with Airflow: use the `airflow_dags/trade_ingest_dag.py`
-- Submit to cloud platforms using job templates in `cloud_jobs/`
-
----
+This project is designed for cloud-native ingestion scenarios and fast local iteration, making it suitable for teams working across hybrid or multi-cloud data environments.
